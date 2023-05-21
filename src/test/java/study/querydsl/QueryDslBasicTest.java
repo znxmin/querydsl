@@ -12,6 +12,8 @@ import study.querydsl.entity.Member;
 import study.querydsl.entity.QMember;
 import study.querydsl.entity.Team;
 
+import static study.querydsl.entity.QMember.member;
+
 @SpringBootTest
 @Transactional
 public class QueryDslBasicTest {
@@ -69,12 +71,26 @@ public class QueryDslBasicTest {
 
     @Test
     void startQueryDSL2() {
+        // Q 클래스 인스턴스를 별칭을 지정하여 사용
         QMember m = new QMember("m");
 
         Member findMember = queryFactory
                 .select(m)
                 .from(m)
                 .where(m.username.eq("member1"))
+                .fetchOne();
+
+        Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    void startQueryDSL3() {
+        // QMember.member (Q 클래스 인스턴스를 사용) static import
+        // 같은 테이블을 여러번 조인해야 하는 경우가 아니면 대부분 이렇게 사용
+        Member findMember = queryFactory
+                .select(member)
+                .from(member)
+                .where(member.username.eq("member1"))
                 .fetchOne();
 
         Assertions.assertThat(findMember.getUsername()).isEqualTo("member1");
