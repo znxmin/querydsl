@@ -274,4 +274,41 @@ public class QueryDslBasicTest {
                 .extracting("username")
                 .containsExactly("teamA", "teamB");
     }
+
+    @Test
+    void join_on_filtering() {
+        // 조인 대상 필터링
+        // JPQL: select m, t from Member m left join m.team t on t.name = 'teamA'
+        // SQL: select m.*, t.* from Member m left join Team t on m.team_id = t.id and t.name = 'teamA'
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                .leftJoin(member.team, team)
+                .on(team.name.eq("teamA"))
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("tuple = " + tuple);
+        }
+    }
+
+    @Test
+    void join_on_no_relation() {
+        // 연관관계 없는 엔티티 외부 조인 (서로 관계 없는 필드로 외부 조인 가능)
+        // JPQL: select m, t from Member m left join Team t on m.username = t.name
+        // SQL: select m.*, t.* from Member m left join Team t on m.username = t.name
+        em.persist(new Member("teamA"));
+        em.persist(new Member("teamB"));
+
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                // .leftJoin(member.team, team)이 아니기 때문에 SQL on 절에서 id로 조인하는 부분 없음
+                .leftJoin(team).on(member.username.eq(team.name))
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("tuple = " + tuple);
+        }
+    }
 }
