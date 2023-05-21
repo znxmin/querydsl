@@ -172,4 +172,32 @@ public class QueryDslBasicTest {
         Assertions.assertThat(member6.getUsername()).isEqualTo("member6");
         Assertions.assertThat(memberNull.getUsername()).isNull();
     }
+
+    @Test
+    void paging1() {
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1)
+                .limit(2)
+                .fetch();
+
+        Assertions.assertThat(result.size()).isEqualTo(2);
+    }
+
+    @Test
+    void paging2() {
+        // fetchResults() -> deprecated
+        QueryResults<Member> queryResults = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1)
+                .limit(2)
+                .fetchResults();
+
+        Assertions.assertThat(queryResults.getTotal()).isEqualTo(4);
+        Assertions.assertThat(queryResults.getLimit()).isEqualTo(2);
+        Assertions.assertThat(queryResults.getOffset()).isEqualTo(1);
+        Assertions.assertThat(queryResults.getResults().size()).isEqualTo(2);
+    }
 }
